@@ -2,15 +2,47 @@
 <html>
 
 <head>
-    <title>Todo List</title>
+    <title>Shopping List</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <!-- Import CSS stylesheet. -->
     <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
+    <div class = "app-container">
+        <div class = "title-div">
+            <span class = "title">
+              <a href="#">
+                  Shopping List
+              </a>
+            </span>
+            <span class = "author">
+                <a href="#">
+                    &nbsp; Xiaomeng Nie &nbsp;
+                </a>
+            </span>
+        </div>
+    </div>
+    <!-- title for form -->
+    <div class="content-div">
+        <div class="create-item-div">
+            <input id = "toggle-all-items-button" class = "hide" type="checkbox" onclick="controller.toggleAllItems()">
+            <form id= "create-item-form" action="">
+                <input id= "create-item-input" type="text" placeholder="Add a new item" onkeyup="view.displayTodoItems()">
+            </form>
+            <button class = "x-button" onclick="controller.clearForm()">x</button>
+            <button id = "create-item-button" class = "hide" onclick = "controller.createItem()" >+</button>
+        </div>
+
+    <!-- content for form -->
+        <div class="item-list-div">
+            <br>
+            <ul></ul>
+        </div>
+
+        <!-- end for form -->
+        <a id = "delete-all-items-button" onclick = "controller.deleteAllItems()">DELETE ALL</a>
+    </div>
     <!-- Import JavaScript. -->
     <script src="./script.js"></script>
 </body>
-
-</html>

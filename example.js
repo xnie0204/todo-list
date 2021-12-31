@@ -34,18 +34,19 @@ const model = {
     * @return {Object} { numItems: ..., numDoneItems: ... }
     */
     countItems: function() {
-       const numItems = this.items.length;
-       let numDoneItems = 0;
-       this.items.forEach(function(item) {
-             if (item.done === true) {
-                 numDoneItems++;
-             }
-       });
-           return {
-               numItems : numItems,
-               numDoneItems: numDoneItems,
-           }
+        const numItems = this.items.length;
+        let numDoneItems = 0;
+        this.items.forEach(function(item) {
+            if (item.done === true) {
+                numDoneItems++;
+            }
+        });
+        return {
+            numItems: numItems,
+            numDoneItems: numDoneItems,
+        };
     },
+
     /**
     * Create a todo item, set it as undone and add it to the "items" array.
     * Items should have the following format:
@@ -53,8 +54,8 @@ const model = {
     * @param {string} name - the name of the new item
     */
     createItem: function(name) {
-        if (typeof name === 'string' && name.length > 0){
-            this.items.push ({
+        if (typeof name === 'string' && name.length > 0) {
+            this.items.push({
                 name: name,
                 done: false,
             });
@@ -94,7 +95,6 @@ const model = {
     toggleItem: function(index) {
         const item = this.items[index];
         item.done = !item.done;
-
     },
 
     /**
@@ -103,13 +103,13 @@ const model = {
     * If an item is undone, change it to done.
     */
     toggleAllItems: function() {
-
-        const {numItems,numDoneItems} = this.countItems();
+        const count = this.countItems();
+        const numItems = count.numItems;
+        const numDoneItems = count.numDoneItems;
         const markItemAsDone = item => (item.done = true);
         const markItemAsUndone = item => (item.done = false);
         const allItemsDone = numItems === numDoneItems;
-
-        this.items.forEach(allItemsDone? markItemAsUndone : markItemAsDone);
+        this.items.forEach(allItemsDone ? markItemAsUndone : markItemAsDone);
     },
 };
 
@@ -134,9 +134,7 @@ const controller = {
     createItem: function() {
         const createItemInput = document.getElementById('create-item-input');
         model.createItem(createItemInput.value);
-        //renew interface
         createItemInput.value = '';
-        //renew list
         view.displayTodoItems();
     },
 
@@ -152,20 +150,31 @@ const controller = {
     * @param {Event} event - the event paramter that is available to event handlers
     */
     updateItemNameOnKeyUp: function(event) {
-        const updateItemInput =  event.target;
-        //get the id from parent li
+        const updateItemInput = event.target;
+
+        // Get the id attribute from updateItemInput's parent <li> element.
         const id = updateItemInput.parentNode.getAttribute('id');
+
+        // Get the input value that the user has entered.
         const newName = updateItemInput.value;
-        //change to new name
-        if (event.keyCode === ENTER_KEY && newName.length >0){
+
+        // If there is some text in the update input,
+        // then change the name of the selected item
+        // when the ENTER key is pressed.
+        if (updateItemInput.value && event.keyCode === ENTER_KEY) {
             this.changeItemName(id, newName);
-            // keep orginal name
-        } else if (event.keyCode === ESC_KEY){
-            //get from model
-               updateItemInput.value = model.items[id].name;
-                 view.displayTodoItems();
         }
-      
+
+        // When the ESC key is pressed,
+        // reset the name of the selected item to the original value.
+        if (event.keyCode === ESC_KEY) {
+            // IMPORTANT
+            // If updateItemInput.value is not reset to the original value,
+            // then this.updateItemNameOnFocusOut() will still run and
+            // update, which is incorrect.
+            updateItemInput.value = model.items[id].name;
+            view.displayTodoItems();
+        }
     },
 
     /**
@@ -176,13 +185,17 @@ const controller = {
     */
     updateItemNameOnFocusOut: function(event) {
         const updateItemInput = event.target;
+
+        // Get the id attribute from updateItemInput's parent <li> element.
         const id = updateItemInput.parentNode.getAttribute('id');
+
+        // Get the input value that the user has entered.
         const newName = updateItemInput.value;
 
-        //if name length > 0,then record the change, otherwise delete it
-        if (newName.length > 0 && typeof newName === 'string') {
+        if (typeof newName === 'string' && newName.length > 0) {
             this.changeItemName(id, newName);
-        } else {
+        }
+        else {
             this.deleteItem(id);
         }
     },
@@ -193,7 +206,7 @@ const controller = {
     * @param {string} name - the item's new name
     */
     changeItemName: function(index, name) {
-        model.changeItemName(index,name);
+        model.changeItemName(index, name);
         view.displayTodoItems();
     },
 
@@ -210,12 +223,11 @@ const controller = {
     * Delete all items.
     */
     deleteAllItems: function() {
-        const confirmDeleteALL = confirm("This will delete all stuff");
-        if (confirmDeleteALL === true) {
+        const confirmDelete = confirm('This will delete all todo items!');
+        if (confirmDelete === true) {
             model.deleteAllItems();
             view.displayTodoItems();
         }
-
     },
 
     /**
@@ -225,10 +237,10 @@ const controller = {
     */
     turnOnUpdatingMode: function(event) {
         const itemLabel = event.target;
-        const updateiteminput = itemLabel.parentNode.querySelector(".update-item-input");
+        const updateItemInput = itemLabel.parentNode.querySelector('.update-item-input');
         view.hideDOMElement(itemLabel);
-        view.displayDOMElement(updateiteminput);
-        updateiteminput.focus();
+        view.displayDOMElement(updateItemInput);
+        updateItemInput.focus();
     },
 
     /**
@@ -239,11 +251,13 @@ const controller = {
     * @param {Event} event - the event paramter that is available to event handlers
     */
     toggleItem: function(event) {
-        const toggleItemCheckBox = event.target;
-        const id = toggleItemCheckBox.parentNode.getAttribute("id");
+        const toggleItemCheckbox = event.target;
+
+        // Get the id attribute from toggleItemCheckbox' parent <li> element.
+        const id = toggleItemCheckbox.parentNode.getAttribute('id');
+
         model.toggleItem(id);
         view.displayTodoItems();
-
     },
 
     /**
@@ -260,11 +274,10 @@ const controller = {
     * Clear the input form that is used to add new items.
     */
     clearForm: function() {
-         const createItemInput = document.getElementById("create-item-input");
-         createItemInput.value = createItemInput.getAttribute("placeholder");
-         const createItemForm = document.getElementById("create-item-form");
-         createItemForm.reset();
-
+        const createItemInput = document.getElementById('create-item-input');
+        createItemInput.value = createItemInput.getAttribute('placeholder');
+        const createItemForm = document.getElementById('create-item-form');
+        createItemForm.reset();
     },
 };
 
@@ -308,80 +321,77 @@ const view = {
         * Display a delete button on the right.
         * Remember to attach appropriate event listener(s) to the button.
         */
-       //  if has something in list, show the toggleAllButton, otherwise hide
-       const todoListUL = document.querySelector("ul");
-       //delete bullet point in ul
-       todoListUL.innerHTML = "";
-       model.items.forEach((item,index) => {
-        const itemLi = document.createElement("li");
-        itemLi.id = index;
+         const todoListUl = document.querySelector('ul');
+         todoListUl.innerHTML = '';
 
-        //create new checkbox
-        const toggleItemCheckBox = document.createElement("input");
-        toggleItemCheckBox.type = "checkbox";
-        toggleItemCheckBox.classList.add("toggle-item-checkbox");
+         model.items.forEach(function(item, index) {
+             const itemLi = document.createElement('li');
+             itemLi.id = index;
 
-        //if change
-        toggleItemCheckBox.addEventListener("change",controller.toggleItem);
-        if(item.done) {
-            toggleItemCheckBox.checked = true;
-        } else {
-            toggleItemCheckBox.checked = false;
-        }
+             const toggleItemCheckbox = document.createElement('input');
+             toggleItemCheckbox.type = 'checkbox';
+             toggleItemCheckbox.classList.add('toggle-item-checkbox');
+             toggleItemCheckbox.addEventListener('change', controller.toggleItem);
+             if (item.done === true) {
+                toggleItemCheckbox.checked = true;
+             }
+             else {
+                toggleItemCheckbox.checked = false;
+             }
 
-        //create new text
-       const updateItemInput = document.createElement("input");
-       updateItemInput.classList.add("update-item-input","hide");
-       updateItemInput.type = "text";
-       updateItemInput.value = item.name;
-       updateItemInput.addEventListener('keyup', controller.updateItemNameOnKeyUp.bind(controller));
-       updateItemInput.addEventListener("focusout",controller.updateItemNameOnFocusOut.bind(controller));
+             const updateItemInput = document.createElement('input');
+             updateItemInput.classList.add('update-item-input', 'hide');
+             updateItemInput.type = 'text';
+             updateItemInput.value = item.name;
+             updateItemInput.addEventListener('keyup', controller.updateItemNameOnKeyUp.bind(controller));
+             updateItemInput.addEventListener('focusout', controller.updateItemNameOnFocusOut.bind(controller));
 
-       //create new label
-       const itemLabel = document.createElement("label");
-       itemLabel.addEventListener("click",controller.turnOnUpdatingMode);
-       itemLabel.textContent = item.name;
-       itemLabel.classList.add("item-label");
+             const itemLabel = document.createElement('label');
+             itemLabel.addEventListener('click', controller.turnOnUpdatingMode);
+             itemLabel.textContent = item.name;
+             itemLabel.classList.add('item-label');
 
-       //create delete button
-       const deleteItemButton = document.createElement("button");
-       deleteItemButton.textContent = "x";
-       deleteItemButton.className = "x-button";
-       deleteItemButton.addEventListener("click",(event) =>(controller.deleteItem(index)));
+             const deleteItemButton = document.createElement('button');
+             deleteItemButton.textContent = 'x';
+             deleteItemButton.className = 'x-button';
+             deleteItemButton.addEventListener('click', (event) => (controller.deleteItem(index)));
 
 
-       if(item.done) {
-           itemLabel.classList.add("item-strikethrough");
-       } else {
+             if (item.done === true) {
+                itemLabel.classList.add('item-strikethrough');
+             }
+             else {
+                itemLabel.classList.remove('item-strikethrough');
+             }
 
-           itemLabel.classList.remove("item-strikethrough");
-       }
+             itemLi.appendChild(toggleItemCheckbox);
+             itemLi.appendChild(itemLabel);
+             itemLi.appendChild(updateItemInput);
+             itemLi.appendChild(deleteItemButton);
+             todoListUl.insertBefore(itemLi, todoListUl.childNodes[0]);
+         });
 
-       itemLi.appendChild(toggleItemCheckBox);
-       itemLi.appendChild(itemLabel);
-       itemLi.appendChild(updateItemInput);
-       itemLi.appendChild(deleteItemButton);
-       //add it to the top
-       todoListUL.insertBefore(itemLi,todoListUL.childNodes[0]);
-    });
+         // Display the button to toggle all items
+         // if there is at least one item.
+         // Hide the button if there are no items.
+         const toggleAllItemsButton = document.querySelector('#toggle-all-items-button');
+         if (model.countItems().numItems > 0) {
+             view.displayDOMElement(toggleAllItemsButton);
+         }
+         else {
+             view.hideDOMElement(toggleAllItemsButton);
+         }
 
-
-
-       const toggleAllItemsButton = document.querySelector('#toggle-all-items-button');
-       if (model.countItems().numItems > 0){
-           this.displayDOMElement(toggleAllItemsButton);
-       } else {
-           this.hideDOMElement(toggleAllItemsButton);
-       }
-
-       const createItemButton = document.querySelector("#create-item-button");
-       const createItemInput = document.getElementById("create-item-input");
-       if (createItemInput.value){
-           this.displayDOMElement(createItemButton);
-       } else {
-           this.hideDOMElement(createItemButton);
-       }
-
+         // Show a "+" button if the user is typing the new item's name.
+         // Hide the button if there is no input value.
+         const createItemButton = document.querySelector('#create-item-button');
+         const createInputElement = document.getElementById('create-item-input');
+         if (createInputElement.value) {
+             view.displayDOMElement(createItemButton);
+         }
+         else {
+             view.hideDOMElement(createItemButton);
+         }
 
     },
 
@@ -390,7 +400,7 @@ const view = {
     * @param {HTMLElement} domElement - the DOM element that you want to display
     */
     displayDOMElement: function(domElement) {
-        domElement.classList.remove("hide");
+        domElement.classList.remove('hide');
     },
 
     /**
@@ -398,7 +408,7 @@ const view = {
     * @param {HTMLElement} domElement - the DOM element that you want to hide
     */
     hideDOMElement: function(domElement) {
-        domElement.classList.add("hide");
+        domElement.classList.add('hide');
     }
 };
 
